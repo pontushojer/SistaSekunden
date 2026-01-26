@@ -1,0 +1,9 @@
+[project]         
+name = "sistasekunden"
+requires-python = ">= 3.11"
+version = "0.1.0"
+dependencies = [
+    "requests", 
+    "python-dotenv",
+    "streamlit",
+]

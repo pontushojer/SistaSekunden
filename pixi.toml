@@ -1,0 +1,13 @@
+[workspace]
+authors = ["Pontus Höjer <pontushojer@gmail.com>"]
+channels = ["conda-forge"]
+name = "SistaSekunden"
+platforms = ["osx-arm64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+requests = ">=2.32.5,<3"
+python-dotenv = ">=1.2.1,<2"
+streamlit = ">=1.53.0,<2"
