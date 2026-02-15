@@ -3,8 +3,17 @@
 
 A public transit departure board which accounts for walk and bike times.
 
+
+![example of departure board](assets/display.png "Departure board")
+
 ## Setup 
 
+Clone this repo into your raspberry pi.
+
+```
+git clone https://github.com/pontushojer/SistaSekunden.git
+cd SistaSekunden
+```
 
 ### API key
 Requires access to the Trafiklab Realtime API, see https://developer.trafiklab.se/
@@ -13,6 +22,12 @@ API keys should be added to a `.env` file as below
 
 ```{bash}
 API_KEY=<my-key>
+```
+
+e.g do 
+
+```{bash}
+echo "API_KEY=<my-key>" > .env
 ```
 
 ### Stop information
@@ -88,7 +103,7 @@ Using `uv` in examples, replace for `pixi` if desired.
 uv run python app.py 
 ```
 
-### Run in production mode using guicorn
+### Run in production mode using guicorn [on Raspberry Pi]
 
 ```
 uv run gunicorn --bind 0.0.0.0:5000 app:app
@@ -98,6 +113,39 @@ To test guicorn on macOS run
 
 ```
 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES uv run gunicorn --bind 0.0.0.0:5002 --workers 1 app:app
+```
+
+### Create service [on Raspberry Pi]
+
+Create service script
+
+```
+sudo nano /etc/systemd/system/sistasekunden.service
+```
+
+Fill in as with correct paths
+
+```
+[Unit]
+Description=Gunicorn instance to serve SistaSekunden
+After=network.target
+
+[Service]
+User=pi
+Group=www-data
+WorkingDirectory=/home/pi/SistaSekunden
+Environment="PATH=/home/pi/SistaSekunden/.venv/bin"
+ExecStart=/home/pi/SistaSekunden/.venv/bin/gunicorn --workers 3 --bind 0.0.0.0:5000 app:app
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Start and enable
+
+```
+sudo systemctl start sistasekunden
+sudo systemctl enable sistasekunden
 ```
 
 ## Development
