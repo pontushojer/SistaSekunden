@@ -79,13 +79,13 @@ class Departure:
     @property
     def walk_leave_in(self):
         if self.walkduration is None:
-            return -10
+            return -1000
         return self.departure_minutes - (self.walkduration + BUFFER_MIN)
 
     @property
     def bike_leave_in(self):
         if self.bikeduration is None:
-            return -10
+            return -1000
         return self.departure_minutes - (self.bikeduration + BUFFER_MIN)
 
     def is_too_late(self):
@@ -97,8 +97,10 @@ class Departure:
             t = min(self.walk_leave_in, self.bike_leave_in)
         elif self.walk_leave_in >= -BUFFER_MIN:
             t = self.walk_leave_in
-        else:
+        elif self.bike_leave_in >= -BUFFER_MIN:
             t = self.bike_leave_in
+        else:
+            t = -1000
 
         return t
 
