@@ -1,9 +1,19 @@
-from flask import Flask, render_template
+import subprocess
 from datetime import datetime
+
+from flask import Flask, render_template
+
 from sl_api import get_all_departures, BUFFER_MIN, create_test_departures
 
 app = Flask(__name__)
 TEST = False
+
+def get_git_revision_short_hash():
+    try:
+        # Runs 'git rev-parse --short HEAD' and decodes the output
+        return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('ascii').strip()
+    except Exception:
+        return "Unknown"
 
 def get_color(time):
     if time <= 0: return "red"
@@ -49,8 +59,9 @@ def index():
     return render_template('index.html', 
                            departures=display_data, 
                            updated=datetime.now().strftime('%H:%M:%S'),
-                           interval=get_run_cycle())
+                           interval=get_run_cycle(),
+                           git_hash=get_git_revision_short_hash())
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5003, debug=True)
