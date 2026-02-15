@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import os
 import json
 import dataclasses
@@ -23,7 +23,7 @@ STOPS = [
             ("610", "11029"), # mot Danderyds sjukhus
             ("684", "11884"), # mot Täby centrum
         ],
-        "walkduration": 5,
+        "walkduration": 4,
         "bikeduration": None,
     },
     {
@@ -46,8 +46,21 @@ STOPS = [
     },
 ]
 
+REPLACE = {
+    "Stockholms": "Stlhm",
+    "sjukhus": "sjkh",
+    "Gribbylund": "Gribbyl",
+    "Galoppfältet": "Galoppen",
+}
+
+
 BUFFER_MIN = 2    # Säkerhetsmarginal
 MAX_DEPARTURES = 5
+
+def shorten(text):
+    for k, v in REPLACE.items():
+        text = text.replace(k, v)
+    return text
 
 @dataclasses.dataclass()
 class Departure:
@@ -126,10 +139,10 @@ def get_sl_departures(stop):
             
             departure = Departure(
                 line=line,
-                destination=departure['route']['direction'],
+                destination=shorten(departure['route']['direction']),
                 destination_id=dest_id,
                 departure=dep_time,
-                stop_name=stop['name'],
+                stop_name=shorten(stop['name']),
                 walkduration=stop["walkduration"],
                 bikeduration=stop["bikeduration"],
             )
@@ -152,6 +165,39 @@ def get_all_departures():
         departures.extend(get_sl_departures(stop))
 
     log.info(f"Found {len(departures)} departures")
+    departures.sort()
+    return departures
+
+def create_test_departures():
+    departures = [
+        Departure(
+            line="27",
+            destination="Stockholms Östra",
+            destination_id="11965",
+            departure=datetime.now() + timedelta(minutes=12),
+            stop_name="Visinge",
+            walkduration=15,
+            bikeduration=6
+        ),
+        Departure(
+            line="610",
+            destination="Danderyds Sjukhus",
+            destination_id="11965",
+            departure=datetime.now() + timedelta(minutes=8),
+            stop_name="Gibbylund Västra",
+            walkduration=5,
+            bikeduration=None
+        ),
+        Departure(
+            line="610",
+            destination="Danderyds Sjukhus",
+            destination_id="11965",
+            departure=datetime.now() + timedelta(minutes=16),
+            stop_name="Gibbylund Västra",
+            walkduration=5,
+            bikeduration=None
+        )
+    ]
     departures.sort()
     return departures
 
