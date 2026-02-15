@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="{{ 30 if interval == '30s' else (60 if interval == '1m' else 300) }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SistaSekunden 🚶</title>
+    <style>
+        body { 
+            background-color: #0e1117; 
+            color: white; 
+            font-family: "Arial", sans-serif; 
+            margin: 0; 
+            padding: 10px; 
+        }
+        .container { width: 100%; max-width: 100%; margin: 0; }
+        
+        /* Table-based layout for best compatibility on iOS 9 */
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px; /* Space between rows */
+        }
+        th { 
+            color: #8b949e; 
+            font-size: 3.0em; 
+            text-transform: uppercase; 
+            padding-bottom: 5px;
+        }
+        td { 
+            background-color: #080816; 
+            border-top: 1px solid #30363d;
+            border-bottom: 1px solid #30363d;
+            padding: 15px 5px;
+            text-align: center;
+        }
+        /* Rounded corners for rows */
+        td:first-child { border-left: 1px solid #30363d; border-radius: 8px 0 0 8px; text-align: left; padding-left: 15px; }
+        td:last-child { border-right: 1px solid #30363d; border-radius: 0 8px 8px 0; }
+
+        .blue-text { color: #58a6ff; text-transform: uppercase; font-weight: bold; font-size: 3.2em; }
+        .line-dest { color: #c1deff; font-size: 3.2em; }
+        .time-val { font-size: 4.7em; }
+        
+        /* Legacy Colors */
+        .red { color: #e05656; }
+        .orange { color: #d29c38; }
+        .yellow { color: #e3e33f; }
+        .green { color: #47b962; }
+
+        hr { border: 0; border-top: 1px solid #30363d; margin: 20px 0; }
+        .caption { color: #8b949e; font-size: 0.8em; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 55%;"></th>
+                    <th style="width: 15%;">OM</th>
+                    <th style="width: 15%;">GÅ</th>
+                    <th style="width: 15%;">CYKLA</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in departures %}
+                <tr>
+                    <td>
+                        <div class="blue-text">{{ d.stop_name }}</div>
+                        <div class="line-dest">{{ d.line }} {{ d.destination }}</div>
+                    </td>
+                    <td class="time-val">{{ d.departure_minutes }}</td>
+                    <td class="time-val {{ d.walk_color }}">
+                        {% if d.show_walk %}{{ d.walk_leave_in }}{% else %}{% endif %}
+                    </td>
+                    <td class="time-val {{ d.bike_color }}">
+                        {% if d.show_bike %}{{ d.bike_leave_in }}{% else %}{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <hr>
+        <p class="caption">
+            Senast uppdaterad: {{ updated }}<br>
+            Uppdateras var: {{ interval }}
+        </p>
+    </div>
+</body>
+</html>

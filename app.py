@@ -1,104 +1,88 @@
-from sl_api import get_all_departures, BUFFER_MIN
-import streamlit as st
+from flask import Flask, render_template
 from datetime import datetime
+from sl_api import get_all_departures, BUFFER_MIN, create_test_departures
 
-RUN_EVERY = "30s"
+app = Flask(__name__)
+TEST = False
 
 def get_color(time):
-    if time <= 0:
-        return "red"
-    elif time <= 2:
-        return "orange"
-    elif time <= 4:
-        return "yellow"
-    else:
-        return "green"
+    if time <= 0: return "red"
+    elif time <= 2: return "orange"
+    elif time <= 4: return "yellow"
+    else: return "green"
 
-def update_run_cycle():
-    # Update the RUN_EVERY variable based on the time of day:
-    # - Rush hour on weekdays (6am-10am): 30s
-    # - Rush hour on weekend (6am-10am): 1m
-    # - Normal hours (10am-8pm): 1m
-    # - Low traffic hours (8pm-6am): 5m
-    global RUN_EVERY
+def get_run_cycle():
     now = datetime.now()
-    if now.hour >= 6 and now.hour < 10:
-        if now.weekday() < 5:
-            RUN_EVERY = "30s"
-        else:
-            RUN_EVERY = "1m"
-    elif now.hour >= 10 and now.hour < 20:
-        RUN_EVERY = "1m"
+    if 6 <= now.hour < 10:
+        return "30s" if now.weekday() < 5 else "1m"
+    elif 10 <= now.hour < 20:
+        return "1m"
+    return "5m"
+
+@app.route('/')
+def index():
+    if TEST:
+        departures = create_test_departures()
     else:
-        RUN_EVERY = "5m"
+        departures = get_all_departures()
+
+    # Filter and limit to 5
+    active_departures = [d for d in departures if not d.is_too_late()][:5]
     
+    # Process colors and data for the template
+    display_data = []
+    for d in active_departures:
+        display_data.append({
+            'stop_name': d.stop_name,
+            'line': d.line,
+            'destination': d.destination,
+            'departure_minutes': d.departure_minutes,
+            'walk_leave_in': d.walk_leave_in,
+            'walk_color': get_color(d.walk_leave_in),
+            'bike_leave_in': d.bike_leave_in,
+            'bike_color': get_color(d.bike_leave_in),
+            'show_walk': d.walk_leave_in >= -BUFFER_MIN,
+            'show_bike': d.bike_leave_in >= -BUFFER_MIN
+        })
 
-st.set_page_config(
-    # Title and icon for the browser's tab bar:
-    page_title="SistaSekunden",
-    page_icon="🚶",
-    # Make the content take up the width of the page:
-    layout="wide",
-)
+    return render_template('index.html', 
+                           departures=display_data, 
+                           updated=datetime.now().strftime('%H:%M:%S'),
+                           interval=get_run_cycle())
 
-# Custom CSS
-# https://discuss.streamlit.io/t/how-do-you-change-the-background-of-a-container/115043/2
-css = """
-.stVerticalBlock {}
-div[class*='blue-container'],div[class^='blue-container'] {
-    background-color: #080816ff;
-}
-"""
 
-st.html(f"<style>{css}</style>")
+@app.route('/get_departures')
+def get_departures():
+    # ... logic to get departures (same as index) ...
+    if TEST:
+        departures = create_test_departures()
+    else:
+        departures = get_all_departures()
 
-@st.fragment(run_every="30s")
-def departure_board():
-    departures = get_all_departures()
+    active_departures = [d for d in departures if not d.is_too_late()][:5]
+    
+    # Pre-process for template
+    display_data = []
+    for d in active_departures:
+        display_data.append({
+            'stop_name': d.stop_name,
+            'line': d.line,
+            'destination': d.destination,
+            'departure_minutes': d.departure_minutes,
+            'walk_leave_in': d.walk_leave_in,
+            'walk_color': get_color(d.walk_leave_in),
+            'bike_leave_in': d.bike_leave_in,
+            'bike_color': get_color(d.bike_leave_in),
+            'show_walk': d.walk_leave_in >= -BUFFER_MIN,
+            'show_bike': d.bike_leave_in >= -BUFFER_MIN
+        })
 
-    n = 0
-    for d in departures:
-        if d.is_too_late():
-            continue
-        
-        with st.container(gap="small", border=True, key=f"blue-container-{n}"):
-            cols = st.columns(4, gap="xsmall", width="stretch")
-            
-            with cols[0]:
-                st.markdown(f"**:blue[{d.stop_name}]**")
-                st.markdown(f"{d.line}")
-                st.markdown(f"*{d.destination}*")
+    # Render a separate "partial" template
+    return render_template('partials/departure_list.html', 
+                           departures=display_data, 
+                           updated=datetime.now().strftime('%H:%M:%S'),
+                           interval=get_run_cycle())
 
-            with cols[1]:
-                st.metric(
-                    label="Avgår om", 
-                    value=f"{d.departure_minutes} min", 
-                )
-            
-            with cols[2]:
-                if d.walk_leave_in >= -BUFFER_MIN:
-                    st.metric(
-                        label="Gå om 🚶", 
-                        value=f":{get_color(d.walk_leave_in)}[{d.walk_leave_in} min]", 
-                    )
-            with cols[3]:
-                if d.bike_leave_in >= -BUFFER_MIN:
-                    st.metric(
-                        label="Cykla om 🚴", 
-                        value=f":{get_color(d.bike_leave_in)}[{d.bike_leave_in} min]",
-                    )
-            
-            #st.space("small")
 
-            n += 1
-            if n >= 5:
-                break
-
-    update_run_cycle()
-        
-# Kör igång brädan
-departure_board()
-
-# Statisk info som aldrig behöver laddas om (t.ex. väder eller påminnelser)
-st.divider()
-st.caption(f"Senast uppdaterad: {datetime.now().strftime('%H:%M:%S')} (updates every {RUN_EVERY})")
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
