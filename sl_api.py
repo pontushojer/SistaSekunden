@@ -15,52 +15,7 @@ log = logging.getLogger(__name__)
 # https://blog.gitguardian.com/how-to-handle-secrets-in-python/
 API_KEY = os.getenv("API_KEY")
 
-STOPS = [
-    {
-        "id": "740045606",
-        "name": "Gribbylund Västra",
-        "lines_w_destinations": [
-            ("610", "11029"), # mot Danderyds sjukhus
-            ("684", "11884"), # mot Täby centrum
-        ],
-        "walkduration": 4,
-        "bikeduration": None,
-    },
-    {
-        "id": "740024370",
-        "name": "Visinge",
-        "lines_w_destinations": [
-            ("27", "11965"), # mot Stockholms Östra
-        ],
-        "walkduration": 15,
-        "bikeduration": 6
-    },
-    {
-        "id": "740024798",
-        "name": "Galoppfältet",
-        "lines_w_destinations": [
-            ("28S", "11965"), # mot Stockholms Östra
-        ],
-        "walkduration": None,
-        "bikeduration": 10
-    },
-]
-
-REPLACE = {
-    "Stockholms": "Stlhm",
-    "sjukhus": "sjkh",
-    "Gribbylund": "Gribbyl",
-    "Galoppfältet": "Galoppen",
-}
-
-
 BUFFER_MIN = 2    # Säkerhetsmarginal
-MAX_DEPARTURES = 5
-
-def shorten(text):
-    for k, v in REPLACE.items():
-        text = text.replace(k, v)
-    return text
 
 @dataclasses.dataclass()
 class Departure:
@@ -124,6 +79,26 @@ def get_sl_departures(stop):
         response.raise_for_status() # Kastar fel om statuskoden är dålig
         data = response.json()
         
+        # Get stop name if missing provided
+        if not stop["name"]:
+            stop_name = data['stops'][0]['name']
+        else:
+            stop_name = stop["name"]
+        
+        # Get lines of interest with destination name if provided
+        lines_of_interest = {}
+        for info in stop["lines_w_destinations"]:
+            name = None
+            if len(info) == 2:
+                line, dest_id = info
+            elif len(info) == 3:
+                line, dest_id, name = info
+            else:
+                log.error(f"Invalid line info, must be (line, dest_id) or (line, dest_id, name): {info}")
+                return []
+
+            lines_of_interest[(line, dest_id)] = name
+
         departures = data.get('departures', {})
         
         results = []
@@ -131,20 +106,24 @@ def get_sl_departures(stop):
             line = departure['route']['designation']
             dest_id = departure['route']['destination']['id']
 
-            if (line, dest_id) not in stop['lines_w_destinations']:
+            if (line, dest_id) not in lines_of_interest:
                 continue
+            
+            if not lines_of_interest[(line, dest_id)]:
+                destination = departure['route']['direction']
             else:
-                 log.debug(f"Skipping {line} to {dest_id}")
-
+                destination = lines_of_interest[(line, dest_id)]
+            
             # SL skickar tid som en sträng, t.ex. "2024-05-20T14:30:00"
             dep_time = datetime.fromisoformat(departure['realtime'])
             
+            # TODO - add info if cancelled
             departure = Departure(
                 line=line,
-                destination=shorten(departure['route']['direction']),
+                destination=destination,
                 destination_id=dest_id,
                 departure=dep_time,
-                stop_name=shorten(stop['name']),
+                stop_name=stop_name,
                 walkduration=stop["walkduration"],
                 bikeduration=stop["bikeduration"],
             )
@@ -162,8 +141,12 @@ def get_sl_departures(stop):
 
 
 def get_all_departures():
+    # Load stops from file
+    with open("stops.json", "r") as f:
+        stops = json.load(f)
+    
     departures = []
-    for stop in STOPS:
+    for stop in stops:
         departures.extend(get_sl_departures(stop))
 
     log.info(f"Found {len(departures)} departures")
@@ -173,29 +156,20 @@ def get_all_departures():
 def create_test_departures():
     departures = [
         Departure(
-            line="27",
-            destination="Stockholms Östra",
-            destination_id="11965",
+            line="666",
+            destination="Hell",
+            destination_id="666",
             departure=datetime.now() + timedelta(minutes=12),
-            stop_name="Visinge",
+            stop_name="Level 1",
             walkduration=15,
             bikeduration=6
         ),
         Departure(
-            line="610",
-            destination="Danderyds Sjukhus",
-            destination_id="11965",
+            line="42",
+            destination="The answer",
+            destination_id="42",
             departure=datetime.now() + timedelta(minutes=8),
-            stop_name="Gibbylund Västra",
-            walkduration=5,
-            bikeduration=None
-        ),
-        Departure(
-            line="610",
-            destination="Danderyds Sjukhus",
-            destination_id="11965",
-            departure=datetime.now() + timedelta(minutes=16),
-            stop_name="Gibbylund Västra",
+            stop_name="Confussion",
             walkduration=5,
             bikeduration=None
         )
@@ -205,17 +179,11 @@ def create_test_departures():
 
 # Testa funktionen
 if __name__ == "__main__":
-    departures = []
-    for stop in STOPS:
-        departures.extend(get_sl_departures(stop))
-
-    departures.sort()
+    # Set logging level to DEBUG
+    logging.basicConfig(level=logging.DEBUG)
     
-    n = 0
+    departures = get_all_departures()
+    
     for d in departures:
         if not d.is_too_late():
             print(d)
-            n += 1
-
-        if n >= MAX_DEPARTURES:
-            break

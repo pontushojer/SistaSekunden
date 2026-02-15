@@ -1,0 +1,45 @@
+[
+    {
+        "id": "740045606",
+        "name": "Gribbyl V\u00e4stra",
+        "lines_w_destinations": [
+            [
+                "610",
+                "11029",
+                "Danderyds sjkh"
+            ],
+            [
+                "684",
+                "11884"
+            ]
+        ],
+        "walkduration": 4,
+        "bikeduration": null
+    },
+    {
+        "id": "740024370",
+        "name": null,
+        "lines_w_destinations": [
+            [
+                "27",
+                "11965",
+                "Sthlms \u00d6stra"
+            ]
+        ],
+        "walkduration": 15,
+        "bikeduration": 6
+    },
+    {
+        "id": "740024798",
+        "name": "Galoppen",
+        "lines_w_destinations": [
+            [
+                "28S",
+                "11965",
+                "Sthlms \u00d6stra"
+            ]
+        ],
+        "walkduration": null,
+        "bikeduration": 10
+    }
+]
