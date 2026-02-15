@@ -55,7 +55,7 @@ Example
 Install pixi
 
 ```{bash}
-url -fsSL https://pixi.sh/install.sh | sh
+curl -fsSL https://pixi.sh/install.sh | sh
 ```
 
 Install dependencies from lock file
@@ -69,7 +69,7 @@ pixi install --locked
 Install uv. Follow instructions as needed
 
 ```{bash}
-url -LsSf https://astral.sh/uv/install.sh | sh 
+curl -LsSf https://astral.sh/uv/install.sh | sh 
 ```
 
 Create environment
