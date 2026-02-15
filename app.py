@@ -15,7 +15,7 @@ def get_run_cycle():
     now = datetime.now()
     if 6 <= now.hour < 10:
         return "30s" if now.weekday() < 5 else "1m"
-    elif 10 <= now.hour < 20:
+    elif 10 <= now.hour < 20 or 5 <= now.hour < 6:
         return "1m"
     return "5m"
 
@@ -26,8 +26,9 @@ def index():
     else:
         departures = get_all_departures()
 
-    # Filter and limit to 5
-    active_departures = [d for d in departures if not d.is_too_late()][:5]
+    # Filter and limit to max 5
+    active_departures = [d for d in departures if not d.is_too_late()]
+    active_departures = active_departures[:min(5, len(active_departures))]
     
     # Process colors and data for the template
     display_data = []
@@ -46,39 +47,6 @@ def index():
         })
 
     return render_template('index.html', 
-                           departures=display_data, 
-                           updated=datetime.now().strftime('%H:%M:%S'),
-                           interval=get_run_cycle())
-
-
-@app.route('/get_departures')
-def get_departures():
-    # ... logic to get departures (same as index) ...
-    if TEST:
-        departures = create_test_departures()
-    else:
-        departures = get_all_departures()
-
-    active_departures = [d for d in departures if not d.is_too_late()][:5]
-    
-    # Pre-process for template
-    display_data = []
-    for d in active_departures:
-        display_data.append({
-            'stop_name': d.stop_name,
-            'line': d.line,
-            'destination': d.destination,
-            'departure_minutes': d.departure_minutes,
-            'walk_leave_in': d.walk_leave_in,
-            'walk_color': get_color(d.walk_leave_in),
-            'bike_leave_in': d.bike_leave_in,
-            'bike_color': get_color(d.bike_leave_in),
-            'show_walk': d.walk_leave_in >= -BUFFER_MIN,
-            'show_bike': d.bike_leave_in >= -BUFFER_MIN
-        })
-
-    # Render a separate "partial" template
-    return render_template('partials/departure_list.html', 
                            departures=display_data, 
                            updated=datetime.now().strftime('%H:%M:%S'),
                            interval=get_run_cycle())
