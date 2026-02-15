@@ -3,7 +3,8 @@ name = "sistasekunden"
 requires-python = ">= 3.11"
 version = "0.1.0"
 dependencies = [
-    "requests", 
+    "requests",
     "python-dotenv",
     "flask >=3.1.2,<4",
+    "gunicorn>=25.1.0",
 ]

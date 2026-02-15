@@ -50,8 +50,6 @@ Example
 ]
 ```
 
-## Running
-
 ### Pixi env
 
 Install pixi
@@ -64,12 +62,6 @@ Install dependencies from lock file
 
 ```{bash}
 pixi install --locked
-```
-
-Run application
-
-```{bash}
-pixi run python app.py 
 ```
 
 ### Uv env
@@ -86,12 +78,27 @@ Create environment
 uv sync
 ```
 
-Run application
+## Running
+
+Using `uv` in examples, replace for `pixi` if desired.
+
+### Run application using Flask (debug mode)
 
 ```{bash}
-uv run app.py
+uv run python app.py 
 ```
 
+### Run in production mode using guicorn
+
+```
+uv run gunicorn --bind 0.0.0.0:5000 app:app
+```
+
+To test guicorn on macOS run
+
+```
+OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES uv run gunicorn --bind 0.0.0.0:5002 --workers 1 app:app
+```
 
 ## Development
 
