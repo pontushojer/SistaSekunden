@@ -5,5 +5,5 @@ version = "0.1.0"
 dependencies = [
     "requests", 
     "python-dotenv",
-    "streamlit",
+    "flask >=3.1.2,<4",
 ]
