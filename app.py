@@ -1,12 +1,12 @@
 import subprocess
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import Flask, render_template
 
 from sl_api import get_all_departures, BUFFER_MIN, create_test_departures
 
 app = Flask(__name__)
-TEST = False
+TEST = True
 
 def get_git_revision_short_hash():
     try:
@@ -24,17 +24,29 @@ def get_color(time):
 def get_run_cycle():
     now = datetime.now()
     if 6 <= now.hour < 10:
-        return "30s" if now.weekday() < 5 else "1m"
+        return timedelta(seconds=30) if now.weekday() < 5 else timedelta(minutes=1)
     elif 10 <= now.hour < 20 or 5 <= now.hour < 6:
-        return "1m"
-    return "5m"
+        return timedelta(minutes=1)
+    return timedelta(minutes=5)
+
+cache = {
+    'last_update': 0,
+    'data': None,
+    "git_hash": get_git_revision_short_hash()
+}
 
 @app.route('/')
 def index():
-    if TEST:
-        departures = create_test_departures()
-    else:
-        departures = get_all_departures()
+    now = datetime.now()
+
+    if cache["data"] is None or now - cache["last_update"] > get_run_cycle():
+        cache["last_update"] = now    
+        if TEST:
+            cache["data"] = create_test_departures()
+        else:
+            cache["data"] = get_all_departures()
+
+    departures = cache["data"]
 
     # Filter and limit to max 5
     active_departures = [d for d in departures if not d.is_too_late()]
@@ -59,8 +71,9 @@ def index():
     return render_template('index.html', 
                            departures=display_data, 
                            updated=datetime.now().strftime('%H:%M:%S'),
-                           interval=get_run_cycle(),
-                           git_hash=get_git_revision_short_hash())
+                           data_pulled=cache["last_update"].strftime('%H:%M:%S'),
+                           interval="15s",
+                           git_hash=cache["git_hash"])
 
 
 if __name__ == '__main__':
