@@ -16,10 +16,15 @@ def get_git_revision_short_hash():
         return "Unknown"
 
 def get_color(time):
-    if time <= 0: return "red"
-    elif time <= 2: return "orange"
-    elif time <= 4: return "yellow"
-    else: return "green"
+    if time > 4:
+        return "green"
+    elif time > 2:
+        return "yellow"
+    elif time > 0:
+        return "orange"
+    elif time >= -BUFFER_MIN:
+        return "red"
+    return ""
 
 def get_run_cycle():
     now = datetime.now()

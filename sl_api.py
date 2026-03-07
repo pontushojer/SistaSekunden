@@ -163,13 +163,13 @@ def create_test_departures():
         return random.choice(places) + random.choice(suffixes)
     
     departures = []
-    for i in range(5):
+    for i in range(10):
         destination = random_place()
         stop = random_place()
         line = random.randint(1, 999)
         walkduration = random.choice(duration)
         bikeduration = random.choice(duration)
-        departure_time = datetime.now() + timedelta(minutes=random.randint(0, 60))
+        departure_time = datetime.now() + timedelta(minutes=random.randint(-2, 20))
         departure_time += timedelta(minutes=max(walkduration, bikeduration, 0))
 
         departures.append(Departure(

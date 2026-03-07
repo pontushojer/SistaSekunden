@@ -2,14 +2,15 @@
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="{{ 15 if interval == '30s' else (30 if interval == '1m' else 60) }}">
+    <meta http-equiv="refresh" content="15">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SistaSekunden 🚶</title>
     <style>
         body { 
             background-color: #0e1117; 
             color: white; 
-            font-family: "Arial", sans-serif; 
+            font-family: 'Roboto Condensed', sans-serif; 
+            letter-spacing: 0.05em;
             margin: 0; 
             padding: 10px; 
         }
@@ -38,14 +39,14 @@
         td:first-child { border-left: 1px solid #30363d; border-radius: 8px 0 0 8px; text-align: left; padding-left: 15px; }
         td:last-child { border-right: 1px solid #30363d; border-radius: 0 8px 8px 0; }
 
-        .blue-text { color: #58a6ff; text-transform: uppercase; font-weight: bold; font-size: 3.2em; }
-        .line-dest { color: #c1deff; font-size: 3.2em; }
+        .blue-text { color: #58a6ff; text-transform: uppercase; font-weight: bold; font-size: 3em; }
+        .line-dest { color: #c1deff; font-size: 3.5em; }
         .time-val { font-size: 4.7em; }
         
         /* Legacy Colors */
-        .red { color: #e05656; }
-        .orange { color: #d29c38; }
-        .yellow { color: #e3e33f; }
+        .red { color: #e05656; background-color: rgba(224, 86, 86, 0.05);}
+        .orange { color: #d29c38; background-color: rgba(210, 156, 56, 0.02);}
+        .yellow { color: #e3e33f; background-color: rgba(227, 227, 63, 0.01);}
         .green { color: #47b962; }
 
         hr { border: 0; border-top: 1px solid #30363d; margin: 20px 0; }
@@ -84,8 +85,8 @@
 
         <hr>
         <p class="caption">
-            Last uppdated: {{ updated }} (every {{ interval }})<br>
-            Data pulled: {{ data_pulled }}<br>
+            Last uppdated: {{ last_update }} |
+            Data pulled: {{ data_pulled }} |
             Current version: {{ git_hash }}
         </p>
     </div>
