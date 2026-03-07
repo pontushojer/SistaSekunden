@@ -6,7 +6,7 @@ from flask import Flask, render_template
 from sl_api import get_all_departures, BUFFER_MIN, create_test_departures
 
 app = Flask(__name__)
-TEST = True
+TEST = False
 
 def get_git_revision_short_hash():
     try:

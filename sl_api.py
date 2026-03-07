@@ -3,6 +3,7 @@ import os
 import json
 import dataclasses
 import logging
+import random
 
 from dotenv import load_dotenv
 import requests
@@ -153,27 +154,33 @@ def get_all_departures():
     departures.sort()
     return departures
 
+places = ["Knog", "Alkis", "Viking", "Fjoll", "Grus", "Mygg", "Fis", "Piss"]
+suffixes = ["borgen", "gatan", "dalen", "vägen", "pölen", "träsk", "allén"]
+duration = list(range(2, 20, 2))
+
 def create_test_departures():
-    departures = [
-        Departure(
-            line="666",
-            destination="Hell",
-            destination_id="666",
-            departure=datetime.now() + timedelta(minutes=12),
-            stop_name="Level 1",
-            walkduration=15,
-            bikeduration=6
-        ),
-        Departure(
-            line="42",
-            destination="The answer",
-            destination_id="42",
-            departure=datetime.now() + timedelta(minutes=8),
-            stop_name="Confussion",
-            walkduration=5,
-            bikeduration=None
-        )
-    ]
+    def random_place():
+        return random.choice(places) + random.choice(suffixes)
+    
+    departures = []
+    for i in range(5):
+        destination = random_place()
+        stop = random_place()
+        line = random.randint(1, 999)
+        walkduration = random.choice(duration)
+        bikeduration = random.choice(duration)
+        departure_time = datetime.now() + timedelta(minutes=random.randint(0, 60))
+        departure_time += timedelta(minutes=max(walkduration, bikeduration, 0))
+
+        departures.append(Departure(
+            line=str(line),
+            destination=destination,
+            destination_id=str(line),
+            departure=departure_time,
+            stop_name=stop,
+            walkduration=walkduration,
+            bikeduration=bikeduration
+        ))
     departures.sort()
     return departures
 
