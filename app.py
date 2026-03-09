@@ -29,9 +29,9 @@ def get_color(time):
 def get_run_cycle():
     now = datetime.now()
     if 6 <= now.hour < 10:
-        return timedelta(seconds=30) if now.weekday() < 5 else timedelta(minutes=1)
+        return timedelta(minutes=1) if now.weekday() < 5 else timedelta(minutes=2)
     elif 10 <= now.hour < 20 or 5 <= now.hour < 6:
-        return timedelta(minutes=1)
+        return timedelta(minutes=2)
     return timedelta(minutes=5)
 
 cache = {
