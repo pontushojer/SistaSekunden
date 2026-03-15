@@ -29,14 +29,16 @@ def get_color(time):
 def get_run_cycle():
     now = datetime.now()
     if 6 <= now.hour < 10:
-        return timedelta(minutes=1) if now.weekday() < 5 else timedelta(minutes=2)
+        return timedelta(minutes=2) if now.weekday() < 5 else timedelta(minutes=4)
     elif 10 <= now.hour < 20 or 5 <= now.hour < 6:
-        return timedelta(minutes=2)
-    return timedelta(minutes=5)
+        return timedelta(minutes=4)
+    elif 20 <= now.hour < 22:
+        return timedelta(minutes=8)
+    return timedelta(minutes=16)
 
 cache = {
-    'last_update': 0,
-    'data': None,
+    'last_update': None,
+    'data': [],
     "git_hash": get_git_revision_short_hash()
 }
 
@@ -44,12 +46,14 @@ cache = {
 def index():
     now = datetime.now()
 
-    if cache["data"] is None or now - cache["last_update"] > get_run_cycle():
-        cache["last_update"] = now    
+    if not cache["data"] or now - cache["last_update"] > get_run_cycle():
         if TEST:
             cache["data"] = create_test_departures()
         else:
             cache["data"] = get_all_departures()
+
+        if cache["data"]:
+            cache["last_update"] = now
 
     departures = cache["data"]
 
@@ -76,7 +80,7 @@ def index():
     return render_template('index.html', 
                            departures=display_data, 
                            updated=datetime.now().strftime('%H:%M:%S'),
-                           data_pulled=cache["last_update"].strftime('%H:%M:%S'),
+                           data_pulled=cache["last_update"].strftime('%H:%M:%S') if cache["last_update"] else "-",
                            interval="15s",
                            git_hash=cache["git_hash"])
 
