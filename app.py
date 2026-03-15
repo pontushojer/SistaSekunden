@@ -17,7 +17,8 @@ def get_git_revision_short_hash():
             ['git', 'rev-parse', '--short', 'HEAD'],
             cwd=script_dir
         ).decode('ascii').strip()
-    except Exception:
+    except Exception as e:
+        print("Error getting git hash:", e)
         return "Unknown"
 
 def get_color(time):
