@@ -137,7 +137,7 @@ def get_sl_departures(stop):
         return results
 
     except Exception as e:
-        print(f"Ett fel uppstod: {e}")
+        log.warning(f"Ett fel uppstod: {e}")
         return []
 
 

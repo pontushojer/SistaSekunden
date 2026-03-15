@@ -148,6 +148,16 @@ sudo systemctl start sistasekunden
 sudo systemctl enable sistasekunden
 ```
 
+To debug the service look at the system journal
+```
+journalctl | tail -n 100
+```
+
+To restart the service run
+
+```
+sudo systemctl start sistasekunden
+```
 ## Development
 
 A full list of stops for the Trafiklab Realtime API can be found here

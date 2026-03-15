@@ -1,3 +1,4 @@
+import logging
 import os
 import subprocess
 from datetime import datetime, timedelta
@@ -9,6 +10,10 @@ from sl_api import get_all_departures, BUFFER_MIN, create_test_departures
 app = Flask(__name__)
 TEST = False
 
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__name__)
+
+
 def get_git_revision_short_hash():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     try:
@@ -18,7 +23,7 @@ def get_git_revision_short_hash():
             cwd=script_dir
         ).decode('ascii').strip()
     except Exception as e:
-        print("Error getting git hash:", e)
+        log.warning("Error getting git hash:", e)
         return "Unknown"
 
 def get_color(time):
