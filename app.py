@@ -1,3 +1,4 @@
+import os
 import subprocess
 from datetime import datetime, timedelta
 
@@ -9,9 +10,13 @@ app = Flask(__name__)
 TEST = False
 
 def get_git_revision_short_hash():
+    script_dir = os.path.dirname(os.path.abspath(__file__))
     try:
         # Runs 'git rev-parse --short HEAD' and decodes the output
-        return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('ascii').strip()
+        return subprocess.check_output(
+            ['git', 'rev-parse', '--short', 'HEAD'],
+            cwd=script_dir
+        ).decode('ascii').strip()
     except Exception:
         return "Unknown"
 
