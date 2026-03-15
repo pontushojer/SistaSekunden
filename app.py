@@ -19,7 +19,7 @@ def get_git_revision_short_hash():
     try:
         # Runs 'git rev-parse --short HEAD' and decodes the output
         return subprocess.check_output(
-            ['git', 'rev-parse', '--short', 'HEAD'],
+            ['/usr/bin/git', 'rev-parse', '--short', 'HEAD'],
             cwd=script_dir
         ).decode('ascii').strip()
     except Exception as e:
