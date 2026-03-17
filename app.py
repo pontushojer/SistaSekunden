@@ -45,7 +45,7 @@ def get_run_cycle():
         return timedelta(minutes=10)
     elif 20 <= now.hour < 22:
         return timedelta(minutes=20)
-    return timedelta(hour=1)
+    return timedelta(hours=1)
 
 cache = {
     'last_update': datetime.now() - timedelta(hours=24),
