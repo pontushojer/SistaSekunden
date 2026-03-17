@@ -48,7 +48,7 @@ def get_run_cycle():
     return timedelta(minutes=16)
 
 cache = {
-    'last_update': None,
+    'last_update': datetime.now() - timedelta(hours=24),
     'data': [],
     "git_hash": get_git_revision_short_hash()
 }
@@ -57,14 +57,13 @@ cache = {
 def index():
     now = datetime.now()
 
-    if not cache["data"] or now - cache["last_update"] > get_run_cycle():
+    if now - cache["last_update"] > get_run_cycle():
+        cache["last_update"] = now
         if TEST:
             cache["data"] = create_test_departures()
         else:
             cache["data"] = get_all_departures()
 
-        if cache["data"]:
-            cache["last_update"] = now
 
     departures = cache["data"]
 
