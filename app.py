@@ -40,12 +40,12 @@ def get_color(time):
 def get_run_cycle():
     now = datetime.now()
     if 6 <= now.hour < 10:
-        return timedelta(minutes=2) if now.weekday() < 5 else timedelta(minutes=4)
+        return timedelta(minutes=5) if now.weekday() < 5 else timedelta(minutes=10)
     elif 10 <= now.hour < 20 or 5 <= now.hour < 6:
-        return timedelta(minutes=4)
+        return timedelta(minutes=10)
     elif 20 <= now.hour < 22:
-        return timedelta(minutes=8)
-    return timedelta(minutes=16)
+        return timedelta(minutes=20)
+    return timedelta(hour=1)
 
 cache = {
     'last_update': datetime.now() - timedelta(hours=24),
@@ -60,10 +60,13 @@ def index():
     if now - cache["last_update"] > get_run_cycle():
         cache["last_update"] = now
         if TEST:
-            cache["data"] = create_test_departures()
+            departures_new = create_test_departures()
         else:
-            cache["data"] = get_all_departures()
+            departures_new = get_all_departures()
 
+        # Only update if new data
+        if departures_new:
+            cache["data"] = departures_new
 
     departures = cache["data"]
 
